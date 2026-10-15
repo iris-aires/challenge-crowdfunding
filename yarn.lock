@@ -4064,7 +4064,7 @@ __metadata:
 
 "@scaffold-ui/debug-contracts@patch:@scaffold-ui/debug-contracts@npm%3A0.1.11#~/.yarn/patches/@scaffold-ui-debug-contracts-npm-0.1.11-d32700232a.patch":
   version: 0.1.11
-  resolution: "@scaffold-ui/debug-contracts@patch:@scaffold-ui/debug-contracts@npm%3A0.1.11#~/.yarn/patches/@scaffold-ui-debug-contracts-npm-0.1.11-d32700232a.patch::version=0.1.11&hash=b98d41"
+  resolution: "@scaffold-ui/debug-contracts@patch:@scaffold-ui/debug-contracts@npm%3A0.1.11#~/.yarn/patches/@scaffold-ui-debug-contracts-npm-0.1.11-d32700232a.patch::version=0.1.11&hash=75e7f0"
   dependencies:
     "@heroicons/react": "npm:^2.2.0"
     react-hot-toast: "npm:^2.5.2"
@@ -4076,7 +4076,7 @@ __metadata:
     react: ^19.2.3
     viem: ^2.23.0
     wagmi: ^2.14.11
-  checksum: 10/0196249b9c4bdcfb115ce6e0ee9c419b4d68c9198c2dc1041bbc1410bc1c3ab4b3feb1ad8b5e8b6c6b9e568817312082643b63a70626a038aa253360b186b510
+  checksum: 10/135d190feff09934083b0187220dd3ebc5da9eff57df5f5e0782eb8c53a80714583a8bb3774b2e1306394eaaf6f96b76fab827f885004fac26f8bf306b4e23dc
   languageName: node
   linkType: hard
 

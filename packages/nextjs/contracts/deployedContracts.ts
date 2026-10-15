@@ -499,7 +499,7 @@ const deployedContracts = {
   },
   11155111: {
     FundingRecipient: {
-      address: "0x5c0a43826b092b4fa71f193b0b0b1be18a204088",
+      address: "0x0b85b06a4e5f817637dc7b71b5df80379a8ae250",
       abi: [
         {
           type: "function",
@@ -589,10 +589,10 @@ const deployedContracts = {
         },
       ],
       inheritedFunctions: {},
-      deployedOnBlock: 11921115,
+      deployedOnBlock: 11921208,
     },
     CrowdFund: {
-      address: "0xd297455559ebacbf39e59eb42a59737e997e00e7",
+      address: "0x92722af3b4e6c2a5850c464c19597e5aaa38bced",
       abi: [
         {
           type: "constructor",
@@ -986,7 +986,7 @@ const deployedContracts = {
         },
       ],
       inheritedFunctions: {},
-      deployedOnBlock: 11921116,
+      deployedOnBlock: 11921209,
     },
   },
 } as const;

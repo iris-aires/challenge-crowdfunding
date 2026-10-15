@@ -1,27 +1,130 @@
 diff --git a/dist/esm/components/DisplayVariable.js b/dist/esm/components/DisplayVariable.js
-index b14928f2cf773dee59dfa62d00297749b4b7be0b..5d1a6ff118fb95efd37784100dcc16c87244313d 100644
+index b14928f2cf773dee59dfa62d00297749b4b7be0b..fe1378eda43fcc83313a819c5f93aa486a664876 100644
 --- a/dist/esm/components/DisplayVariable.js
 +++ b/dist/esm/components/DisplayVariable.js
-@@ -1,3 +1,4 @@
+@@ -1,3 +1,5 @@
++import { formatDebugValue } from "../utils/ethUsdDisplay";
 +import { formatDeadline } from "../utils/formatDeadline";
  import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
  import { useReadContract } from "wagmi";
  import { useAnimationConfig } from "../hooks/useAnimationConfig";
-@@ -20,6 +21,7 @@ export const DisplayVariable = ({ contractAddress, abiFunction, refreshDisplayVa
+@@ -20,6 +22,8 @@ export const DisplayVariable = ({ contractAddress, abiFunction, refreshDisplayVa
          },
      });
      const { showAnimation } = useAnimationConfig(result);
++    const formattedValue = formatDebugValue(abiFunction.name, result);
 +    const deadlineDisplay = abiFunction.name === "deadline" ? formatDeadline(result) : undefined;
      useEffect(() => {
          refetch();
      }, [refetch, refreshDisplayVariables]);
-@@ -30,5 +32,5 @@ export const DisplayVariable = ({ contractAddress, abiFunction, refreshDisplayVa
+@@ -30,5 +34,5 @@ export const DisplayVariable = ({ contractAddress, abiFunction, refreshDisplayVa
              notification.error(parsedError);
          }
      }, [error]);
 -    return (_jsxs("div", { className: "space-y-1 pb-2", children: [_jsxs("div", { className: "flex items-center", children: [_jsx("h3", { className: "font-medium text-lg mb-0 break-all", children: abiFunction.name }), _jsx("button", { className: "p-1 text-sui-primary-content/60 hover:text-sui-primary-content dark:hover:bg-sui-primary-neutral hover:bg-sui-primary transition-colors duration-200 cursor-pointer ml-1", onClick: async () => await refetch(), children: isFetching ? (_jsx("div", { className: "w-3 h-3 border border-sui-primary-subtle border-t-transparent animate-spin" })) : (_jsx(ArrowPathIcon, { className: "h-3 w-3 cursor-pointer", "aria-hidden": "true" })) }), _jsx(InheritanceTooltip, { inheritedFrom: inheritedFrom })] }), _jsx("div", { className: "text-sui-primary-content/80 flex flex-col items-start", children: _jsx("div", { children: _jsx("div", { className: `block transition ${showAnimation ? "bg-[#e2d563] animate-pulse-fast" : "bg-transparent"}`, children: displayTxResult(result, "base") }) }) })] }));
-+    return (_jsxs("div", { className: "space-y-1 pb-2", children: [_jsxs("div", { className: "flex items-center", children: [_jsx("h3", { className: "font-medium text-lg mb-0 break-all", children: abiFunction.name }), _jsx("button", { className: "p-1 text-sui-primary-content/60 hover:text-sui-primary-content dark:hover:bg-sui-primary-neutral hover:bg-sui-primary transition-colors duration-200 cursor-pointer ml-1", onClick: async () => await refetch(), children: isFetching ? (_jsx("div", { className: "w-3 h-3 border border-sui-primary-subtle border-t-transparent animate-spin" })) : (_jsx(ArrowPathIcon, { className: "h-3 w-3 cursor-pointer", "aria-hidden": "true" })) }), _jsx(InheritanceTooltip, { inheritedFrom: inheritedFrom })] }), _jsx("div", { className: "text-sui-primary-content/80 flex flex-col items-start", children: _jsx("div", { children: _jsx("div", { className: `block transition ${showAnimation ? "bg-[#e2d563] animate-pulse-fast" : "bg-transparent"}`, children: deadlineDisplay ? _jsx("time", { dateTime: deadlineDisplay.dateTime, title: deadlineDisplay.title, children: deadlineDisplay.text }) : displayTxResult(result, "base") }) }) })] }));
++    return (_jsxs("div", { className: "space-y-1 pb-2", children: [_jsxs("div", { className: "flex items-center", children: [_jsx("h3", { className: "font-medium text-lg mb-0 break-all", children: abiFunction.name }), _jsx("button", { className: "p-1 text-sui-primary-content/60 hover:text-sui-primary-content dark:hover:bg-sui-primary-neutral hover:bg-sui-primary transition-colors duration-200 cursor-pointer ml-1", onClick: async () => await refetch(), children: isFetching ? (_jsx("div", { className: "w-3 h-3 border border-sui-primary-subtle border-t-transparent animate-spin" })) : (_jsx(ArrowPathIcon, { className: "h-3 w-3 cursor-pointer", "aria-hidden": "true" })) }), _jsx(InheritanceTooltip, { inheritedFrom: inheritedFrom })] }), _jsx("div", { className: "text-sui-primary-content/80 flex flex-col items-start", children: _jsx("div", { children: _jsx("div", { className: `block transition ${showAnimation ? "bg-[#e2d563] animate-pulse-fast" : "bg-transparent"}`, children: deadlineDisplay ? _jsx("time", { dateTime: deadlineDisplay.dateTime, title: deadlineDisplay.title, children: deadlineDisplay.text }) : formattedValue ?? displayTxResult(result, "base") }) }) })] }));
  };
+diff --git a/dist/esm/components/EthUsdValueForm.js b/dist/esm/components/EthUsdValueForm.js
+new file mode 100644
+index 0000000000000000000000000000000000000000..8223c9ac957e30b23fb0220b05a417344b816c99
+--- /dev/null
++++ b/dist/esm/components/EthUsdValueForm.js
+@@ -0,0 +1,42 @@
++"use client";
++import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
++import { useState } from "react";
++import { useReadContract } from "wagmi";
++import { useContractConfig } from "../contexts/ContractConfigContext";
++import { getParsedError } from "../utils/getParsedError";
++import { parseEthInput, formatUsdValue } from "../utils/ethUsdDisplay";
++export const EthUsdValueForm = ({ contractAddress, abi }) => {
++    const { chainId } = useContractConfig();
++    const [amount, setAmount] = useState("1");
++    const [result, setResult] = useState();
++    const [failure, setFailure] = useState();
++    const weiAmount = parseEthInput(amount);
++    const invalid = weiAmount === undefined;
++    const { isFetching, refetch } = useReadContract({
++        address: contractAddress, abi, chainId, functionName: "getUsdValue",
++        args: [weiAmount ?? 0n], query: { enabled: false, retry: false },
++    });
++    const id = "eth-usd-" + chainId + "-" + contractAddress;
++    return _jsxs("div", { className: "flex flex-col gap-3 py-5 first:pt-0 last:pb-1", children: [
++        _jsx("p", { className: "font-medium my-0", children: "getUsdValue" }),
++        _jsx("label", { htmlFor: id, className: "text-xs font-medium ml-2", children: "Amount (ETH)" }),
++        _jsx("input", { id, name: "ETH amount", type: "text", inputMode: "decimal", "aria-invalid": invalid, "aria-describedby": invalid ? id + "-error" : undefined, className: "w-full border-2 border-sui-input-border bg-sui-input-background text-sui-input-text px-4 h-10 focus:outline-none", value: amount, placeholder: "Amount in ETH, e.g. 1 or 0.01", disabled: isFetching, onChange: event => { setAmount(event.target.value); setResult(undefined); setFailure(undefined); } }),
++        invalid && _jsx("p", { id: id + "-error", role: "alert", className: "text-error text-xs my-0", children: "Enter a non-negative ETH amount with at most 18 decimal places." }),
++        failure && _jsx("p", { role: "alert", className: "text-error text-sm my-0", children: failure }),
++        _jsxs("div", { className: "flex flex-col md:flex-row justify-between gap-2", children: [
++            _jsx("div", { className: "grow", "aria-live": "polite", children: result !== undefined && _jsxs("div", { className: "bg-sui-primary-subtle text-sm px-4 py-1.5 break-words", children: [
++                _jsx("p", { className: "font-bold m-0 mb-1", children: "Result (USD):" }),
++                _jsx("p", { className: "m-0", children: formatUsdValue(result) }),
++            ] }) }),
++            _jsx("button", { className: "btn-dc btn-dc-secondary btn-sm self-end md:self-start", disabled: isFetching || invalid, onClick: async () => {
++                if (invalid) return;
++                setResult(undefined); setFailure(undefined);
++                try {
++                    const response = await refetch();
++                    if (response.error) { setFailure(getParsedError(response.error)); return; }
++                    setResult(response.data);
++                } catch (error) { setFailure(getParsedError(error)); }
++            }, children: isFetching ? "Reading…" : "Read 📡" }),
++        ] }),
++    ] });
++};
+diff --git a/dist/esm/components/ReadOnlyFunctionForm.js b/dist/esm/components/ReadOnlyFunctionForm.js
+index fbd52a25ae0e549215ec0e0d9392f99671f3260c..2e8f6635d2b031b7a76f8d611fe978acac8133a0 100644
+--- a/dist/esm/components/ReadOnlyFunctionForm.js
++++ b/dist/esm/components/ReadOnlyFunctionForm.js
+@@ -1,3 +1,4 @@
++import { EthUsdValueForm } from "./EthUsdValueForm";
+ "use client";
+ import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
+ import { useEffect, useState } from "react";
+@@ -9,7 +10,7 @@ import { getParsedError } from "../utils/getParsedError";
+ import { ContractInput } from "./ContractInput";
+ import { notification } from "../utils/notification";
+ import { useContractConfig } from "../contexts/ContractConfigContext";
+-export const ReadOnlyFunctionForm = ({ contractAddress, abiFunction, inheritedFrom, abi, }) => {
++const GenericReadOnlyFunctionForm = ({ contractAddress, abiFunction, inheritedFrom, abi, }) => {
+     const { chainId } = useContractConfig();
+     const [form, setForm] = useState(() => getInitialFormState(abiFunction));
+     const [result, setResult] = useState();
+@@ -44,3 +45,5 @@ export const ReadOnlyFunctionForm = ({ contractAddress, abiFunction, inheritedFr
+                             setResult(data);
+                         }, disabled: isFetching, children: [isFetching && _jsx("span", { className: "loading-dc loading-dc-spinner loading-xs" }), "Read \uD83D\uDCE1"] })] })] }));
+ };
++
++export const ReadOnlyFunctionForm = props => props.abiFunction.name === "getUsdValue" && props.abiFunction.inputs.length === 1 && props.abiFunction.inputs[0].type === "uint256" ? _jsx(EthUsdValueForm, props) : _jsx(GenericReadOnlyFunctionForm, props);
+diff --git a/dist/esm/utils/ethUsdDisplay.js b/dist/esm/utils/ethUsdDisplay.js
+new file mode 100644
+index 0000000000000000000000000000000000000000..b9d023d8e7d2c3c1d13b79cf18ed2ae269eb11a4
+--- /dev/null
++++ b/dist/esm/utils/ethUsdDisplay.js
+@@ -0,0 +1,23 @@
++import { parseEther, formatEther, maxUint256 } from "viem";
++export const parseEthInput = value => {
++    if (!/^\d+(?:\.\d{1,18})?$/.test(value)) return undefined;
++    try {
++        const amount = parseEther(value);
++        return amount <= maxUint256 ? amount : undefined;
++    } catch { return undefined; }
++};
++export const formatUsdValue = value => {
++    const cents = value / 10000000000000000n;
++    return "$" + (cents / 100n).toLocaleString("en-US") + "." + (cents % 100n).toString().padStart(2, "0") + " USD";
++};
++export const formatDebugValue = (name, value) => {
++    if (typeof value !== "bigint") return undefined;
++    if (name === "threshold" || name === "totalFunded") return formatEther(value) + " ETH";
++    if (name === "timeLeft") {
++        // Round upwards so a live campaign never appears to have zero days remaining.
++        const hundredths = (value * 100n + 86399n) / 86400n;
++        const fraction = (hundredths % 100n).toString().padStart(2, "0").replace(/0+$/, "");
++        return (hundredths / 100n).toString() + (fraction ? "." + fraction : "") + (hundredths === 100n ? " day" : " days");
++    }
++    return undefined;
++};
 diff --git a/dist/esm/utils/formatDeadline.js b/dist/esm/utils/formatDeadline.js
 new file mode 100644
 index 0000000000000000000000000000000000000000..a37870902124b91018c3324532c5c8d7908b142b

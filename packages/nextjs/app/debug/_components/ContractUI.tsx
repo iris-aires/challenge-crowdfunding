@@ -34,5 +34,15 @@ export const ContractUI = ({ contractName }: ContractUIProps) => {
     );
   }
 
-  return <Contract contractName={contractName as string} contract={deployedContractData} chainId={targetNetwork.id} />;
+  const displayContract = {
+    ...deployedContractData,
+    abi: deployedContractData.abi.filter(
+      item =>
+        item.type !== "function" ||
+        contractName !== "CrowdFund" ||
+        !["ADMIN", "PRICE_FEED", "getEthUsdPrice", "MAX_PRICE_AGE"].includes(item.name),
+    ),
+  };
+
+  return <Contract contractName={contractName as string} contract={displayContract} chainId={targetNetwork.id} />;
 };
