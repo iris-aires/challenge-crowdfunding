@@ -1,5 +1,5 @@
 {
-  "name": "Scaffold-ETH 2 DApp",
-  "description": "A DApp built with Scaffold-ETH",
+  "name": "Crowdfund",
+  "description": "Transparent Ethereum crowdfunding",
   "iconPath": "logo.svg"
 }

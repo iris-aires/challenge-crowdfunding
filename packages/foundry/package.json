@@ -17,7 +17,7 @@
     "postinstall": "shx cp -n .env.example .env",
     "lint": "make lint",
     "test": "forge test",
-    "verify": "make verify RPC_URL=${1:-localhost}"
+    "verify": "node scripts-js/verify.js"
   },
   "dependencies": {
     "dotenv": "~16.3.1",

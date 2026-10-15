@@ -15,57 +15,50 @@
 
 @plugin "daisyui/theme" {
   name: "light";
-
-  --color-primary: #93bbfb;
-  --color-primary-content: #212638;
-  --color-secondary: #dae8ff;
-  --color-secondary-content: #212638;
-  --color-accent: #93bbfb;
-  --color-accent-content: #212638;
-  --color-neutral: #212638;
+  default: true;
+  --color-primary: #111111;
+  --color-primary-content: #ffffff;
+  --color-secondary: #f4e7df;
+  --color-secondary-content: #282828;
+  --color-accent: #e99871;
+  --color-accent-content: #171717;
+  --color-neutral: #242424;
   --color-neutral-content: #ffffff;
   --color-base-100: #ffffff;
-  --color-base-200: #f4f8ff;
-  --color-base-300: #dae8ff;
-  --color-base-content: #212638;
-  --color-info: #93bbfb;
-  --color-success: #34eeb6;
-  --color-warning: #ffcf72;
-  --color-error: #ff8863;
-
-  --radius-field: 0rem;
-  --radius-box: 0rem;
-  --radius-selector: 0rem;
-
+  --color-base-200: #f7f7f7;
+  --color-base-300: #e8e8e8;
+  --color-base-content: #181818;
+  --color-info: #597dab;
+  --color-success: #27845b;
+  --color-warning: #cf8a32;
+  --color-error: #c64c4c;
+  --radius-field: 0.5rem;
+  --radius-box: 1rem;
+  --radius-selector: 0.5rem;
   --tt-tailw: 6px;
 }
-
 @plugin "daisyui/theme" {
   name: "dark";
-
-  --color-primary: #212638;
-  --color-primary-content: #f9fbff;
-  --color-secondary: #323f61;
-  --color-secondary-content: #f9fbff;
-  --color-accent: #4969a6;
-  --color-accent-content: #f9fbff;
-  --color-neutral: #f9fbff;
-  --color-neutral-content: #385183;
-  --color-base-100: #385183;
-  --color-base-200: #2a3655;
-  --color-base-300: #212638;
-  --color-base-content: #f9fbff;
-  --color-info: #385183;
-  --color-success: #34eeb6;
-  --color-warning: #ffcf72;
-  --color-error: #ff8863;
-
-  --radius-field: 0rem;
-  --radius-box: 0rem;
-  --radius-selector: 0rem;
-
+  --color-primary: #f5f5f5;
+  --color-primary-content: #171717;
+  --color-secondary: #3b2d27;
+  --color-secondary-content: #f0c9b4;
+  --color-accent: #f0b394;
+  --color-accent-content: #171717;
+  --color-neutral: #eeeeee;
+  --color-neutral-content: #171717;
+  --color-base-100: #202020;
+  --color-base-200: #171717;
+  --color-base-300: #363636;
+  --color-base-content: #eeeeee;
+  --color-info: #93bbfb;
+  --color-success: #75c69e;
+  --color-warning: #e2ae64;
+  --color-error: #f18d8d;
+  --radius-field: 0.5rem;
+  --radius-box: 1rem;
+  --radius-selector: 0.5rem;
   --tt-tailw: 6px;
-  --tt-bg: var(--color-primary);
 }
 
 /*
@@ -115,77 +108,22 @@
   text-underline-offset: 2px;
 }
 
+/* Shared address/ENS avatars, wallet avatars, and AddressInput identicons. */
+img[alt$=" avatar"],
+input + img[alt=""][width="35"][height="35"] {
+  border-radius: 50%;
+  aspect-ratio: 1;
+  object-fit: cover;
+}
+
 .link:hover {
   opacity: 80%;
-}
-
-/* -- EXTENSION OVERRIDES -- */
-
-@plugin "daisyui/theme" {
-  name: "light";
-
-  --color-primary: #c8f5ff;
-  --color-primary-content: #026262;
-  --color-secondary: #89d7e9;
-  --color-secondary-content: #088484;
-  --color-accent: #026262;
-  --color-accent-content: #e9fbff;
-  --color-neutral: #088484;
-  --color-neutral-content: #f0fcff;
-  --color-base-100: #f0fcff;
-  --color-base-200: #e1faff;
-  --color-base-300: #c8f5ff;
-  --color-base-content: #088484;
-  --color-info: #026262;
-  --color-success: #34eeb6;
-  --color-warning: #ffcf72;
-  --color-error: #ff8863;
-
-  --radius-field: 0rem;
-  --radius-box: 0rem;
-  --radius-selector: 0rem;
-
-  /* tooltip tail width */
-  --tt-tailw: 6px;
-}
-
-/* —— DARK THEME —— */
-@plugin "daisyui/theme" {
-  name: "dark";
-
-  --color-primary: #026262;
-  --color-primary-content: #c8f5ff;
-  --color-secondary: #107575;
-  --color-secondary-content: #e9fbff;
-  --color-accent: #c8f5ff;
-  --color-accent-content: #088484;
-  --color-neutral: #e9fbff;
-  --color-neutral-content: #11acac;
-  --color-base-100: #11acac;
-  --color-base-200: #088484;
-  --color-base-300: #026262;
-  --color-base-content: #e9fbff;
-  --color-info: #c8f5ff;
-  --color-success: #34eeb6;
-  --color-warning: #ffcf72;
-  --color-error: #ff8863;
-
-  --radius-field: 0rem;
-  --radius-box: 0rem;
-  --radius-selector: 0rem;
-
-  --tt-tailw: 6px;
-  --tt-bg: var(--color-primary); /* if you need a tooltip bg override */
-}
-
-@theme inline {
-  --font-space-grotesk: var(--font-space-grotesk);
 }
 
 /* Override Scaffold UI theme colors */
 html[data-theme] {
   --color-sui-primary: var(--color-primary);
-  --color-sui-primary-content: var(--color-primary-content);
+  --color-sui-primary-content: var(--color-base-content);
   --color-sui-primary-subtle: var(--color-secondary);
   --color-sui-primary-neutral: var(--color-base-200);
   --color-sui-base-content: var(--color-base-content);
@@ -202,4 +140,365 @@ html[data-theme] {
 
   --color-sui-skeleton-base: var(--color-sui-primary-subtle);
   --color-sui-skeleton-highlight: var(--color-sui-primary-neutral);
+}
+
+/* Explorer-inspired application layout */
+body {
+  font-family: Arial, Helvetica, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+h1,
+h2,
+h3 {
+  letter-spacing: -0.035em;
+  line-height: 1.2;
+}
+.btn {
+  text-transform: none;
+  font-weight: 600;
+  border-radius: 8px;
+}
+.btn:focus-visible,
+a:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 4px;
+}
+.btn-primary {
+  border-color: var(--color-primary);
+}
+.navbar {
+  padding: 0 max(16px, calc((100vw - 1240px) / 2));
+  min-height: 80px;
+}
+.navbar .nav-active {
+  background: transparent;
+  box-shadow: inset 0 -2px var(--color-base-content);
+}
+.navbar li > a {
+  color: color-mix(in srgb, var(--color-base-content) 65%, transparent);
+  font-weight: 600;
+  font-size: 12px;
+}
+.navbar li > a.nav-active {
+  color: var(--color-base-content);
+}
+.explorer-page {
+  width: min(1120px, calc(100% - 64px));
+  margin: 0 auto;
+  padding: 30px 0 56px;
+}
+.breadcrumb {
+  display: flex;
+  gap: 12px;
+  font-size: 12px;
+  color: color-mix(in srgb, var(--color-base-content) 55%, transparent);
+  margin-bottom: 38px;
+}
+.campaign-hero {
+  max-width: 800px;
+  margin: 0 auto 40px;
+}
+.campaign-identity {
+  display: flex;
+  gap: 24px;
+  align-items: flex-start;
+  margin-bottom: 28px;
+}
+.asset-icon {
+  width: 88px;
+  height: 88px;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: linear-gradient(125deg, #ffc3a6, #ffb5c5);
+  color: #171717;
+  font-size: 54px;
+  line-height: 1;
+}
+.campaign-identity h1 {
+  font-size: 28px;
+  font-weight: 700;
+  margin: 0;
+}
+.muted {
+  color: color-mix(in srgb, var(--color-base-content) 58%, transparent);
+}
+.address-caption {
+  font-size: 11px;
+  font-weight: 600;
+  margin-bottom: 5px;
+}
+.contract-address {
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}
+.network-badge,
+.status-badge {
+  font-size: 11px;
+  font-weight: 600;
+  border-radius: 30px;
+  padding: 5px 10px;
+  background: var(--color-secondary);
+  color: var(--color-secondary-content);
+  white-space: nowrap;
+}
+.status-badge {
+  background: color-mix(in srgb, var(--color-base-100) 55%, transparent);
+}
+.balance-card {
+  border-radius: 20px;
+  padding: 24px;
+  background: var(--color-secondary);
+  color: var(--color-secondary-content);
+}
+.balance-value {
+  margin: 16px 0 20px;
+}
+.balance-value .btn {
+  padding: 0;
+  height: auto;
+  min-height: 0;
+  font-size: 30px;
+  letter-spacing: -0.04em;
+  font-family: monospace;
+  color: inherit;
+}
+.balance-value .btn span:last-child {
+  font-size: 14px;
+  margin-left: 10px;
+}
+.funding-progress {
+  height: 4px;
+  background: color-mix(in srgb, var(--color-secondary-content) 10%, transparent);
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 12px;
+}
+.funding-progress > div {
+  height: 100%;
+  background: #d28e67;
+  border-radius: inherit;
+  transition: width 0.3s;
+}
+.summary-section {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 56px;
+  padding: 30px 0 38px;
+  border-top: 1px solid var(--color-base-300);
+  border-bottom: 1px solid var(--color-base-300);
+}
+.summary-section h2 {
+  font-size: 16px;
+  font-weight: 600;
+}
+.summary-copy {
+  font-size: 13px;
+  line-height: 1.8;
+  margin: 14px 0 0;
+}
+.stat-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 28px 24px;
+  padding-top: 2px;
+}
+.stat-grid dt {
+  font-size: 12px;
+  color: color-mix(in srgb, var(--color-base-content) 58%, transparent);
+  margin-bottom: 8px;
+}
+.stat-grid dd {
+  font-size: 15px;
+  font-weight: 600;
+  margin: 0 0 5px;
+  font-variant-numeric: tabular-nums;
+}
+.recipient-address {
+  max-width: 230px;
+}
+.action-section {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 80px;
+  padding: 42px 0;
+}
+.eyebrow {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  margin-bottom: 12px;
+  color: color-mix(in srgb, var(--color-base-content) 50%, transparent);
+}
+.action-section h2 {
+  font-size: 28px;
+  font-weight: 700;
+}
+.action-section p {
+  font-size: 13px;
+  line-height: 1.7;
+}
+.contribution-card {
+  background: var(--color-base-100);
+  border: 1px solid var(--color-base-300);
+  border-radius: 16px;
+  padding: 24px;
+}
+.contribution-amount {
+  font-size: 40px;
+  font-weight: 600;
+  letter-spacing: -0.04em;
+  margin: 18px 0 24px;
+}
+.contribution-amount span {
+  font-size: 18px;
+  font-weight: 400;
+  color: color-mix(in srgb, var(--color-base-content) 45%, transparent);
+}
+.settlement-actions {
+  display: flex;
+  gap: 12px;
+  border-top: 1px solid var(--color-base-300);
+  padding-top: 16px;
+  margin-top: 18px;
+}
+.settlement-actions .btn {
+  flex: 1;
+  font-size: 12px;
+}
+.trust-note {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  color: color-mix(in srgb, var(--color-base-content) 55%, transparent);
+  border-top: 1px solid var(--color-base-300);
+  padding-top: 20px;
+}
+.site-footer {
+  border-top: 1px solid var(--color-base-300);
+  padding: 28px max(24px, calc((100vw - 1120px) / 2));
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  background: var(--color-base-100);
+  font-size: 12px;
+}
+.table-panel {
+  border: 1px solid var(--color-base-300);
+  border-radius: 14px;
+  overflow: hidden;
+  background: var(--color-base-100);
+}
+.table th {
+  background: var(--color-base-200);
+  font-weight: 500;
+  font-size: 12px;
+  padding: 18px 24px;
+}
+.table td {
+  padding: 20px 24px;
+  border-color: var(--color-base-300);
+}
+.empty-state {
+  padding: 80px 24px !important;
+  text-align: center;
+}
+.empty-state h2 {
+  font-size: 24px;
+  font-weight: 600;
+}
+@media (max-width: 1023px) {
+  .navbar {
+    min-height: 72px;
+    padding: 0 8px;
+  }
+  .navbar-end {
+    margin-right: 0;
+  }
+}
+@media (max-width: 640px) {
+  .explorer-page {
+    width: calc(100% - 32px);
+    padding-top: 24px;
+  }
+  .breadcrumb {
+    margin-bottom: 28px;
+  }
+  .campaign-identity {
+    gap: 14px;
+  }
+  .asset-icon {
+    width: 56px;
+    height: 56px;
+    font-size: 36px;
+  }
+  .campaign-identity h1 {
+    font-size: 22px;
+  }
+  .balance-card {
+    padding: 20px;
+  }
+  .summary-section,
+  .action-section {
+    grid-template-columns: 1fr;
+    gap: 28px;
+  }
+  .stat-grid {
+    gap: 24px 12px;
+  }
+  .stat-grid dd {
+    font-size: 13px;
+  }
+  .site-footer {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .trust-note {
+    flex-wrap: wrap;
+  }
+  .trust-note svg.ml-auto {
+    margin-left: 0;
+  }
+  .navbar-start > a {
+    margin-right: 0;
+  }
+  .navbar-start > a > div:last-child {
+    display: none;
+  }
+}
+
+/* Keep application colors above vendor theme defaults. */
+html[data-theme="light"] {
+  --color-primary: #111111;
+  --color-primary-content: #ffffff;
+  --color-secondary: #f4e7df;
+  --color-secondary-content: #282828;
+  --color-accent: #d28e67;
+  --color-accent-content: #171717;
+  --color-neutral: #242424;
+  --color-neutral-content: #ffffff;
+  --color-base-100: #ffffff;
+  --color-base-200: #f7f7f7;
+  --color-base-300: #e8e8e8;
+  --color-base-content: #181818;
+}
+html[data-theme="dark"] {
+  /* Scaffold UI uses primary for card surfaces, borders, and shadows in dark mode.
+     The app's primary is near-white for buttons, so use a dark surface here. */
+  --color-sui-primary: var(--color-base-300);
+  --color-primary: #f5f5f5;
+  --color-primary-content: #171717;
+  --color-secondary: #3b2d27;
+  --color-secondary-content: #f0c9b4;
+  --color-accent: #f0b394;
+  --color-accent-content: #171717;
+  --color-neutral: #eeeeee;
+  --color-neutral-content: #171717;
+  --color-base-100: #202020;
+  --color-base-200: #171717;
+  --color-base-300: #363636;
+  --color-base-content: #eeeeee;
 }

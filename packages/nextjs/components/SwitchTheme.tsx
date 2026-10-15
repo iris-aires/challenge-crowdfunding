@@ -29,6 +29,7 @@ export const SwitchTheme = ({ className }: { className?: string }) => {
       {/* [--depth:0] removes DaisyUI's glossy top highlight so the indicator is a single flat color */}
       <input
         id="theme-toggle"
+        aria-label="Dark mode"
         type="checkbox"
         className="toggle bg-secondary toggle-primary hover:bg-accent transition-all [--depth:0]"
         onChange={handleToggle}

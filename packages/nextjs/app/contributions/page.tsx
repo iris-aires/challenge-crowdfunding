@@ -1,57 +1,106 @@
 "use client";
 
+import Link from "next/link";
 import { Address } from "@scaffold-ui/components";
+import { useQuery } from "@tanstack/react-query";
 import type { NextPage } from "next";
-import { formatEther } from "viem";
-import { useScaffoldEventHistory } from "~~/hooks/scaffold-eth";
+import { formatEther, parseAbiItem } from "viem";
+import { usePublicClient } from "wagmi";
+import { useDeployedContractInfo } from "~~/hooks/scaffold-eth";
+import { useTargetNetwork } from "~~/hooks/scaffold-eth/useTargetNetwork";
 
 const ContributionsPage: NextPage = () => {
-  const { data: contributionEvents, isLoading } = useScaffoldEventHistory({
-    contractName: "CrowdFund",
-    eventName: "Contribution",
+  const { targetNetwork } = useTargetNetwork();
+  const { data: contract, isLoading: contractLoading } = useDeployedContractInfo({ contractName: "CrowdFund" });
+  const client = usePublicClient({ chainId: targetNetwork.id });
+  const supportsEvents = contract?.abi.some(item => (item.type as string) === "event") ?? false;
+  const {
+    data: contributionEvents,
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: ["campaign-contributions", targetNetwork.id, contract?.address],
+    enabled: !!client && !!contract && supportsEvents,
+    refetchInterval: 3000,
+    queryFn: async () =>
+      client!.getLogs({
+        address: contract!.address,
+        event: parseAbiItem("event Contribution(address, uint256)"),
+        fromBlock: BigInt(contract!.deployedOnBlock ?? 0),
+        toBlock: "latest",
+      }),
   });
-
-  if (isLoading)
-    return (
-      <div className="flex justify-center items-center mt-10">
-        <span className="loading loading-spinner loading-lg"></span>
-      </div>
-    );
-
   return (
-    <div className="flex items-center flex-col flex-grow pt-10">
-      <div className="px-5">
-        <h1 className="text-center mb-3">
-          <span className="block text-2xl font-bold">All Contributions</span>
-        </h1>
+    <div className="explorer-page">
+      <div className="breadcrumb">
+        <Link href="/">Ethereum</Link>
+        <span>/</span>
+        <span>Contributions</span>
       </div>
-
-      <div className="overflow-x-auto shadow-lg">
-        <table className="table table-zebra w-full">
+      <div className="flex flex-wrap items-center justify-between gap-4 mb-8">
+        <div>
+          <h1 className="text-3xl font-bold">Contributions</h1>
+          <p className="muted text-sm">Every contribution, recorded onchain.</p>
+        </div>
+        <span className="network-badge">{targetNetwork.name}</span>
+      </div>
+      <div className="table-panel overflow-x-auto">
+        <table className="table w-full">
           <thead>
             <tr>
-              <th className="bg-primary">From</th>
-              <th className="bg-primary">Value</th>
+              <th>Contributor</th>
+              <th>Amount</th>
+              <th>Block</th>
             </tr>
           </thead>
           <tbody>
-            {!contributionEvents || contributionEvents.length === 0 ? (
+            {isLoading || contractLoading ? (
               <tr>
-                <td colSpan={3} className="text-center">
-                  No events found
+                <td colSpan={3} className="empty-state">
+                  <span className="loading loading-spinner loading-md" />
+                  <p className="muted" role="status">
+                    Loading contributions…
+                  </p>
+                </td>
+              </tr>
+            ) : error ? (
+              <tr>
+                <td colSpan={3} className="empty-state">
+                  <h2>Unable to load contributions.</h2>
+                  <p className="muted">Check your network connection and contract deployment.</p>
+                </td>
+              </tr>
+            ) : contract && !supportsEvents ? (
+              <tr>
+                <td colSpan={3} className="empty-state">
+                  <h2>Contribution history unavailable.</h2>
+                  <p className="muted">The deployed contract does not yet emit contribution events.</p>
+                </td>
+              </tr>
+            ) : !contributionEvents?.length ? (
+              <tr>
+                <td colSpan={3} className="empty-state">
+                  <h2>
+                    This campaign has
+                    <br />
+                    no contributions yet.
+                  </h2>
+                  <p className="muted">Be the first to support this shared goal.</p>
+                  <Link href="/crowdfund" className="btn btn-primary btn-sm mt-3">
+                    Explore campaign
+                  </Link>
                 </td>
               </tr>
             ) : (
-              contributionEvents.map((event, index) => {
-                return (
-                  <tr key={index}>
-                    <td>
-                      <Address address={event.args?.[0]} />
-                    </td>
-                    <td>{formatEther(event.args?.[1] || 0n)} ETH</td>
-                  </tr>
-                );
-              })
+              contributionEvents.map(event => (
+                <tr key={`${event.transactionHash}-${event.logIndex}`}>
+                  <td>
+                    <Address address={event.args?.[0]} chain={targetNetwork} />
+                  </td>
+                  <td className="font-mono">{formatEther(event.args?.[1] || 0n)} ETH</td>
+                  <td className="muted font-mono">{event.blockNumber?.toString() ?? "—"}</td>
+                </tr>
+              ))
             )}
           </tbody>
         </table>
@@ -59,5 +108,4 @@ const ContributionsPage: NextPage = () => {
     </div>
   );
 };
-
 export default ContributionsPage;

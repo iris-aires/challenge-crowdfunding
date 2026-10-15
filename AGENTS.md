@@ -1,16 +1,10 @@
 # AGENTS.md
 
-## What is Speedrun Ethereum?
-
-[Speedrun Ethereum](https://speedrunethereum.com/) is a hands-on learning platform where developers learn Solidity and Ethereum development by building real dApps through progressive challenges. Instead of passive tutorials, each challenge teaches a key concept: from tokens and crowdfunding to DEXs, oracles, lending, and zero-knowledge proofs. All challenges use Scaffold-ETH 2 as the development framework. Completed challenges become public portfolio items.
-
-**This extension is one of the Speedrun Ethereum challenges.** It covers **Crowdfunding**.
-
 ## Challenge Overview
 
 The learner builds a **crowdfunding dApp** where users can coordinate a group funding effort using two smart contracts: `CrowdFund` and `FundingRecipient`. If enough ETH is contributed before a deadline, funds are forwarded to the recipient. If not, contributors can withdraw their funds. The users only have to trust the code, not each other.
 
-The final deliverable: a dApp that lets users contribute ETH, tracks balances, executes funding on deadline, and handles withdrawals. Deploy contracts to a testnet, ship the frontend to Vercel, and submit the URL on SpeedRunEthereum.com.
+The final deliverable: a dApp that lets users contribute ETH, tracks balances, executes funding on deadline, and handles withdrawals. Deploy contracts to a testnet and ship the frontend to Vercel.
 
 ## Why Crowdfunding Matters
 
@@ -198,20 +192,3 @@ Run `yarn test` for all or `yarn test --match-test "CheckpointN"` for specific c
 - `yarn deploy --reset` resets the deadline; regular `yarn deploy` only redeploys if contract changed
 - If using named event params, update `contributions/page.tsx` to match
 - Solidity version must stay `0.8.20`, do not change it
-
-# Speedrun Ethereum AI-Guided mode
-
-This project has an interactive AI learning mode for blockchain development.
-
-## Quick Start
-Run `/start` to begin. The AI will guide you through building a smart contract interactively.
-
-## Commands
-- `/start` — Begin or resume the challenge
-- `/skip` — Skip current coding task (AI writes + explains solution)
-- `hint` — Get help anytime
-- `check` — Validate your code (code-writing challenges)
-
-## Key Files
-- `extension/.ai/CHALLENGE.yaml` — Challenge definition
-- `.challenge-ai/progress.json` — Your progress (auto-generated)

@@ -14,6 +14,7 @@ const args = process.argv.slice(2);
 let fileName = "Deploy.s.sol";
 let network = "localhost";
 let keystoreArg = null;
+let gasEstimateMultiplier = "130";
 
 // Show help message if --help is provided
 if (args.includes("--help") || args.includes("-h")) {
@@ -23,6 +24,7 @@ Options:
   --file <filename>     Specify the deployment script file (default: Deploy.s.sol)
   --network <network>   Specify the network (default: localhost)
   --keystore <name>     Specify the keystore account to use (bypasses selection prompt)
+  --gas-estimate-multiplier <percent>  Gas estimate multiplier (default: 130)
   --help, -h           Show this help message
 Examples:
   yarn deploy --file DeployYourContract.s.sol --network sepolia
@@ -41,6 +43,14 @@ for (let i = 0; i < args.length; i++) {
   } else if (args[i] === "--file" && args[i + 1]) {
     fileName = args[i + 1];
     i++; // Skip next arg since we used it
+  } else if (args[i] === "--gas-estimate-multiplier") {
+    const value = args[i + 1];
+    if (!value || !/^\d+$/.test(value) || !Number.isSafeInteger(Number(value)) || Number(value) < 100) {
+      console.error("Gas estimate multiplier must be an integer of at least 100.");
+      process.exit(1);
+    }
+    gasEstimateMultiplier = value;
+    i++;
   } else if (args[i] === "--keystore" && args[i + 1]) {
     keystoreArg = args[i + 1];
     i++; // Skip next arg since we used it
@@ -152,6 +162,7 @@ The default account (scaffold-eth-default) can only be used for localhost deploy
 process.env.DEPLOY_SCRIPT = `script/${fileName}`;
 process.env.RPC_URL = network;
 process.env.ETH_KEYSTORE_ACCOUNT = selectedKeystore;
+process.env.GAS_ESTIMATE_MULTIPLIER = gasEstimateMultiplier;
 
 const result = spawnSync("make", ["deploy-and-generate-abis"], {
   stdio: "inherit",

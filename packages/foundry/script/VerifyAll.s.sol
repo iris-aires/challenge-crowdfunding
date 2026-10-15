@@ -3,7 +3,6 @@ pragma solidity ^0.8.19;
 
 import "forge-std/Script.sol";
 import "forge-std/Vm.sol";
-import "solidity-bytes-utils/BytesLib.sol";
 
 /**
  * @dev Temp Vm implementation
@@ -63,7 +62,11 @@ contract VerifyAll is Script {
 
         bytes memory constructorArgs;
         if (deployedBytecode.length > compiledLen) {
-            constructorArgs = BytesLib.slice(deployedBytecode, compiledLen, deployedBytecode.length - compiledLen);
+            // Constructor arguments follow the compiled creation bytecode.
+            constructorArgs = new bytes(deployedBytecode.length - compiledLen);
+            for (uint256 i = 0; i < constructorArgs.length; i++) {
+                constructorArgs[i] = deployedBytecode[compiledLen + i];
+            }
         } else {
             constructorArgs = new bytes(0);
         }

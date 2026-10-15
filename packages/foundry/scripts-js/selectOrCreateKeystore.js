@@ -1,6 +1,6 @@
 import { readdirSync, existsSync } from "fs";
 import { join } from "path";
-import { spawnSync, spawn } from "child_process";
+import { createKeystore } from "./generateKeystore.js";
 import readline from "readline";
 import { fileURLToPath } from "url";
 
@@ -45,60 +45,10 @@ async function selectOrCreateKeystore() {
     const selection = parseInt(answer);
 
     if (selection === 0) {
-      const newWalletResult = spawnSync("cast", ["wallet", "new"], {
-        encoding: "utf-8",
-      });
-
-      if (newWalletResult.error || newWalletResult.status !== 0) {
-        console.error(
-          "\n❌ Error generating new wallet:",
-          newWalletResult.stderr || newWalletResult.error
-        );
-        process.exit(1);
-      }
-
-      const privateKey = newWalletResult.stdout
-        .split("\n")
-        .find((line) => line.includes("Private key:"))
-        ?.split(":")[1]
-        ?.trim();
-
-      if (!privateKey) {
-        console.error("\n❌ Could not extract private key from output");
-        process.exit(1);
-      }
-
-      const keystoreName = await new Promise((resolve) => {
-        rl.question("\nEnter name for new keystore: ", resolve);
-      });
-
-      // Close readline before spawning process with inherited stdio
       rl.close();
-
-      return new Promise((resolve, reject) => {
-        const importProcess = spawn(
-          "cast",
-          ["wallet", "import", keystoreName, "--private-key", privateKey],
-          {
-            stdio: "inherit",
-          }
-        );
-
-        importProcess.on("close", (code) => {
-          if (code === 0) {
-            console.log(
-              "\n💰 Fund the address and re-run the deploy command to use this keystore."
-            );
-            console.log(
-              `\nTIP: Use \`yarn account\` and select \`${keystoreName}\` keystore to check if the address is funded.`
-            );
-            process.exit(0);
-          } else {
-            console.error("\n❌ Error importing keystore");
-            reject(new Error("Import failed"));
-          }
-        });
-      });
+      await createKeystore();
+      // A newly created account must be funded before deployment.
+      process.exit(0);
     }
 
     if (isNaN(selection) || selection < 1 || selection > keystores.length) {
