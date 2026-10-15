@@ -7,22 +7,27 @@ import { campaignReadAbi } from "./campaignAbi";
 import { Address } from "@scaffold-ui/components";
 import { useWatchBalance } from "@scaffold-ui/hooks";
 import humanizeDuration from "humanize-duration";
-import { formatEther, parseEther } from "viem";
+import { formatEther } from "viem";
 import { useAccount, useReadContract } from "wagmi";
 import { ArrowTopRightOnSquareIcon, ClockIcon, ShieldCheckIcon } from "@heroicons/react/24/outline";
 import { useDeployedContractInfo, useScaffoldReadContract, useScaffoldWriteContract } from "~~/hooks/scaffold-eth";
 import { useTargetNetwork } from "~~/hooks/scaffold-eth/useTargetNetwork";
+import { useChainlinkEthUsdPrice } from "~~/hooks/useChainlinkEthUsdPrice";
+import { formatUsdAmount, parseContributionAmount } from "~~/utils/crowdfunding";
 
 export const ContributeContractInteraction = ({ address }: { address?: string }) => {
   const { address: connectedAddress } = useAccount();
   const { targetNetwork } = useTargetNetwork();
   const { data: crowdFundContract } = useDeployedContractInfo({ contractName: "CrowdFund" });
-  const { data: fundingRecipientContract } = useDeployedContractInfo({ contractName: "FundingRecipient" });
   const { data: crowdFundContractBalance } = useWatchBalance({ address: crowdFundContract?.address });
-  const { data: fundingRecipientBalance } = useWatchBalance({ address: fundingRecipientContract?.address });
   const supportsRead = (name: string) =>
     crowdFundContract?.abi.some(item => item.type === "function" && item.name === name) ?? false;
-  const contractReady = supportsRead("threshold") && supportsRead("balances") && supportsRead("openToWithdraw");
+  const contractReady =
+    supportsRead("threshold") &&
+    supportsRead("balances") &&
+    supportsRead("openToWithdraw") &&
+    supportsRead("completed") &&
+    supportsRead("totalFunded");
   const readOptions = { address: crowdFundContract?.address, abi: campaignReadAbi, chainId: targetNetwork.id } as const;
   const { data: threshold } = useReadContract({
     ...readOptions,
@@ -40,10 +45,20 @@ export const ContributeContractInteraction = ({ address }: { address?: string })
     args: [connectedAddress!],
     query: { enabled: supportsRead("balances") && !!connectedAddress, refetchInterval: 3000 },
   });
-  const { data: isFundingCompleted } = useScaffoldReadContract({
-    contractName: "FundingRecipient",
+  const { data: isFundingCompleted } = useReadContract({
+    ...readOptions,
     functionName: "completed",
-    watch: true,
+    query: { enabled: supportsRead("completed"), refetchInterval: 3000 },
+  });
+  const { data: totalFunded } = useReadContract({
+    ...readOptions,
+    functionName: "totalFunded",
+    query: { enabled: supportsRead("totalFunded"), refetchInterval: 3000 },
+  });
+  const { data: recipientAddress } = useReadContract({
+    ...readOptions,
+    functionName: "fundingRecipient",
+    query: { enabled: supportsRead("fundingRecipient") },
   });
   const { data: openToWithdraw } = useReadContract({
     ...readOptions,
@@ -52,9 +67,17 @@ export const ContributeContractInteraction = ({ address }: { address?: string })
   });
   const { writeContractAsync } = useScaffoldWriteContract({ contractName: "CrowdFund" });
   const [pendingAction, setPendingAction] = useState<string | null>(null);
-  const balance = isFundingCompleted ? fundingRecipientBalance?.value : crowdFundContractBalance?.value;
+  const [contributionAmount, setContributionAmount] = useState("0.01");
+  const contributionWei = parseContributionAmount(contributionAmount);
+  const { price: ethUsdPrice, updatedAt: priceUpdatedAt, status: priceStatus } = useChainlinkEthUsdPrice();
+  const balance = isFundingCompleted ? totalFunded : crowdFundContractBalance?.value;
   const progress = balance !== undefined && threshold ? Number((balance * 10000n) / threshold) / 100 : undefined;
-  const ready = !!address && timeLeft !== undefined && isFundingCompleted !== undefined && openToWithdraw !== undefined;
+  const ready =
+    contractReady &&
+    !!address &&
+    timeLeft !== undefined &&
+    isFundingCompleted !== undefined &&
+    openToWithdraw !== undefined;
   const ended = timeLeft === 0n;
   const status =
     crowdFundContract && !contractReady
@@ -69,9 +92,10 @@ export const ContributeContractInteraction = ({ address }: { address?: string })
               ? "Awaiting settlement"
               : "Funding open";
   const transact = async (action: "contribute" | "execute" | "withdraw") => {
+    if (action === "contribute" && contributionWei === undefined) return;
     setPendingAction(action);
     try {
-      if (action === "contribute") await writeContractAsync({ functionName: "contribute", value: parseEther("0.5") });
+      if (action === "contribute") await writeContractAsync({ functionName: "contribute", value: contributionWei! });
       else await writeContractAsync({ functionName: action });
     } catch (error) {
       console.error(`Unable to ${action}`, error);
@@ -167,7 +191,7 @@ export const ContributeContractInteraction = ({ address }: { address?: string })
           <div>
             <dt>Recipient</dt>
             <dd className="recipient-address">
-              <Address address={fundingRecipientContract?.address} chain={targetNetwork} />
+              <Address address={recipientAddress} chain={targetNetwork} />
             </dd>
             <span className="muted text-xs">Funding recipient contract</span>
           </div>
@@ -185,18 +209,53 @@ export const ContributeContractInteraction = ({ address }: { address?: string })
         </div>
         <div className="contribution-card">
           <div className="flex justify-between items-center">
-            <span className="muted text-sm">Contribution amount</span>
+            <label htmlFor="contribution-amount" className="muted text-sm">
+              Contribution amount
+            </label>
             <span className="network-badge">ETH</span>
           </div>
-          <div className="contribution-amount">
-            0.5 <span>ETH</span>
+          <div className="contribution-amount flex flex-wrap items-baseline gap-3">
+            <input
+              id="contribution-amount"
+              className="min-w-0 w-36 flex-auto bg-transparent border-b border-base-300 focus:outline-accent"
+              type="number"
+              inputMode="decimal"
+              min="0.01"
+              max="1000"
+              step="0.01"
+              value={contributionAmount}
+              onChange={event => setContributionAmount(event.target.value)}
+              disabled={pendingAction !== null}
+              aria-invalid={contributionWei === undefined}
+              aria-describedby={contributionWei === undefined ? "contribution-amount-error" : undefined}
+            />
+            <span>ETH</span>
           </div>
+          <p className="muted text-sm" aria-live="polite" aria-atomic="true">
+            {contributionWei === undefined
+              ? "— USD"
+              : ethUsdPrice !== undefined
+                ? `≈ ${formatUsdAmount(contributionWei, ethUsdPrice)} USD`
+                : priceStatus === "loading"
+                  ? "Loading Chainlink price…"
+                  : "Chainlink USD estimate unavailable"}
+          </p>
+          {contributionWei === undefined && (
+            <p id="contribution-amount-error" className="text-error text-xs" role="alert">
+              Enter 0.01–1,000 ETH with at most two decimal places.
+            </p>
+          )}
+          <p className="muted text-xs">
+            {priceUpdatedAt !== undefined
+              ? `Chainlink ETH/USD · Updated ${new Date(priceUpdatedAt * 1000).toLocaleTimeString()} · Refreshes every 5s`
+              : "USD amounts are estimates from the Sepolia Chainlink ETH/USD feed."}
+          </p>
           <button
             className="btn btn-primary w-full"
-            disabled={disabled || ended || !!isFundingCompleted || !!openToWithdraw}
+            disabled={disabled || contributionWei === undefined || ended || !!isFundingCompleted || !!openToWithdraw}
             onClick={() => transact("contribute")}
           >
-            {pendingAction === "contribute" ? "Confirming…" : "Contribute 0.5 ETH"}
+            {pendingAction === "contribute" ? "Confirming…" : `Contribute ${contributionAmount || "—"} ETH`}
           </button>
           <p className="muted text-xs text-center" role="status">
             {crowdFundContract && !contractReady

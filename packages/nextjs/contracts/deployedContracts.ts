@@ -119,6 +119,45 @@ const deployedContracts = {
         },
         {
           type: "function",
+          name: "ADMIN",
+          inputs: [],
+          outputs: [
+            {
+              name: "",
+              type: "address",
+              internalType: "address",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "MAX_PRICE_AGE",
+          inputs: [],
+          outputs: [
+            {
+              name: "",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "PRICE_FEED",
+          inputs: [],
+          outputs: [
+            {
+              name: "",
+              type: "address",
+              internalType: "contract AggregatorV3Interface",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
           name: "balances",
           inputs: [
             {
@@ -132,6 +171,19 @@ const deployedContracts = {
               name: "",
               type: "uint256",
               internalType: "uint256",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "completed",
+          inputs: [],
+          outputs: [
+            {
+              name: "",
+              type: "bool",
+              internalType: "bool",
             },
           ],
           stateMutability: "view",
@@ -178,6 +230,43 @@ const deployedContracts = {
         },
         {
           type: "function",
+          name: "getEthUsdPrice",
+          inputs: [],
+          outputs: [
+            {
+              name: "price",
+              type: "uint256",
+              internalType: "uint256",
+            },
+            {
+              name: "updatedAt",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "getUsdValue",
+          inputs: [
+            {
+              name: "weiAmount",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+          outputs: [
+            {
+              name: "",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
           name: "openToWithdraw",
           inputs: [],
           outputs: [
@@ -217,6 +306,32 @@ const deployedContracts = {
         },
         {
           type: "function",
+          name: "totalFunded",
+          inputs: [],
+          outputs: [
+            {
+              name: "",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "updateDeadline",
+          inputs: [
+            {
+              name: "daysFromNow",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+          outputs: [],
+          stateMutability: "nonpayable",
+        },
+        {
+          type: "function",
           name: "withdraw",
           inputs: [],
           outputs: [],
@@ -242,9 +357,71 @@ const deployedContracts = {
           anonymous: false,
         },
         {
+          type: "event",
+          name: "DeadlineUpdated",
+          inputs: [
+            {
+              name: "previousDeadline",
+              type: "uint256",
+              indexed: false,
+              internalType: "uint256",
+            },
+            {
+              name: "newDeadline",
+              type: "uint256",
+              indexed: false,
+              internalType: "uint256",
+            },
+          ],
+          anonymous: false,
+        },
+        {
           type: "error",
           name: "AlreadyCompleted",
           inputs: [],
+        },
+        {
+          type: "error",
+          name: "AlreadySettled",
+          inputs: [],
+        },
+        {
+          type: "error",
+          name: "ContributionClosed",
+          inputs: [
+            {
+              name: "deadline",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+        },
+        {
+          type: "error",
+          name: "InvalidDeadlineDays",
+          inputs: [
+            {
+              name: "daysFromNow",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+        },
+        {
+          type: "error",
+          name: "InvalidOraclePrice",
+          inputs: [],
+        },
+        {
+          type: "error",
+          name: "InvalidRecipient",
+          inputs: [
+            {
+              name: "recipient",
+              type: "address",
+              internalType: "address",
+            },
+          ],
         },
         {
           type: "error",
@@ -253,8 +430,24 @@ const deployedContracts = {
         },
         {
           type: "error",
+          name: "NotAdmin",
+          inputs: [],
+        },
+        {
+          type: "error",
           name: "NotOpenToWithdraw",
           inputs: [],
+        },
+        {
+          type: "error",
+          name: "StaleOraclePrice",
+          inputs: [
+            {
+              name: "updatedAt",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
         },
         {
           type: "error",
@@ -269,6 +462,17 @@ const deployedContracts = {
               name: "currentTimestamp",
               type: "uint256",
               internalType: "uint256",
+            },
+          ],
+        },
+        {
+          type: "error",
+          name: "UnsupportedOracleDecimals",
+          inputs: [
+            {
+              name: "decimals",
+              type: "uint8",
+              internalType: "uint8",
             },
           ],
         },
@@ -295,7 +499,7 @@ const deployedContracts = {
   },
   11155111: {
     FundingRecipient: {
-      address: "0x1d9cf7f7d1724e1ad664948d3ff12a8b2e438cff",
+      address: "0x5c0a43826b092b4fa71f193b0b0b1be18a204088",
       abi: [
         {
           type: "function",
@@ -385,10 +589,10 @@ const deployedContracts = {
         },
       ],
       inheritedFunctions: {},
-      deployedOnBlock: 11920703,
+      deployedOnBlock: 11921115,
     },
     CrowdFund: {
-      address: "0x44080f8643565b5ce857e1fb90b2de47ddc9bb26",
+      address: "0xd297455559ebacbf39e59eb42a59737e997e00e7",
       abi: [
         {
           type: "constructor",
@@ -407,6 +611,45 @@ const deployedContracts = {
         },
         {
           type: "function",
+          name: "ADMIN",
+          inputs: [],
+          outputs: [
+            {
+              name: "",
+              type: "address",
+              internalType: "address",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "MAX_PRICE_AGE",
+          inputs: [],
+          outputs: [
+            {
+              name: "",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "PRICE_FEED",
+          inputs: [],
+          outputs: [
+            {
+              name: "",
+              type: "address",
+              internalType: "contract AggregatorV3Interface",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
           name: "balances",
           inputs: [
             {
@@ -420,6 +663,19 @@ const deployedContracts = {
               name: "",
               type: "uint256",
               internalType: "uint256",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "completed",
+          inputs: [],
+          outputs: [
+            {
+              name: "",
+              type: "bool",
+              internalType: "bool",
             },
           ],
           stateMutability: "view",
@@ -466,6 +722,43 @@ const deployedContracts = {
         },
         {
           type: "function",
+          name: "getEthUsdPrice",
+          inputs: [],
+          outputs: [
+            {
+              name: "price",
+              type: "uint256",
+              internalType: "uint256",
+            },
+            {
+              name: "updatedAt",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "getUsdValue",
+          inputs: [
+            {
+              name: "weiAmount",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+          outputs: [
+            {
+              name: "",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
           name: "openToWithdraw",
           inputs: [],
           outputs: [
@@ -505,6 +798,32 @@ const deployedContracts = {
         },
         {
           type: "function",
+          name: "totalFunded",
+          inputs: [],
+          outputs: [
+            {
+              name: "",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "updateDeadline",
+          inputs: [
+            {
+              name: "daysFromNow",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+          outputs: [],
+          stateMutability: "nonpayable",
+        },
+        {
+          type: "function",
           name: "withdraw",
           inputs: [],
           outputs: [],
@@ -530,9 +849,71 @@ const deployedContracts = {
           anonymous: false,
         },
         {
+          type: "event",
+          name: "DeadlineUpdated",
+          inputs: [
+            {
+              name: "previousDeadline",
+              type: "uint256",
+              indexed: false,
+              internalType: "uint256",
+            },
+            {
+              name: "newDeadline",
+              type: "uint256",
+              indexed: false,
+              internalType: "uint256",
+            },
+          ],
+          anonymous: false,
+        },
+        {
           type: "error",
           name: "AlreadyCompleted",
           inputs: [],
+        },
+        {
+          type: "error",
+          name: "AlreadySettled",
+          inputs: [],
+        },
+        {
+          type: "error",
+          name: "ContributionClosed",
+          inputs: [
+            {
+              name: "deadline",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+        },
+        {
+          type: "error",
+          name: "InvalidDeadlineDays",
+          inputs: [
+            {
+              name: "daysFromNow",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+        },
+        {
+          type: "error",
+          name: "InvalidOraclePrice",
+          inputs: [],
+        },
+        {
+          type: "error",
+          name: "InvalidRecipient",
+          inputs: [
+            {
+              name: "recipient",
+              type: "address",
+              internalType: "address",
+            },
+          ],
         },
         {
           type: "error",
@@ -541,8 +922,24 @@ const deployedContracts = {
         },
         {
           type: "error",
+          name: "NotAdmin",
+          inputs: [],
+        },
+        {
+          type: "error",
           name: "NotOpenToWithdraw",
           inputs: [],
+        },
+        {
+          type: "error",
+          name: "StaleOraclePrice",
+          inputs: [
+            {
+              name: "updatedAt",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
         },
         {
           type: "error",
@@ -557,6 +954,17 @@ const deployedContracts = {
               name: "currentTimestamp",
               type: "uint256",
               internalType: "uint256",
+            },
+          ],
+        },
+        {
+          type: "error",
+          name: "UnsupportedOracleDecimals",
+          inputs: [
+            {
+              name: "decimals",
+              type: "uint8",
+              internalType: "uint8",
             },
           ],
         },
@@ -578,7 +986,7 @@ const deployedContracts = {
         },
       ],
       inheritedFunctions: {},
-      deployedOnBlock: 11920704,
+      deployedOnBlock: 11921116,
     },
   },
 } as const;

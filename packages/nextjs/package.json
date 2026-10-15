@@ -20,7 +20,7 @@
     "@rainbow-me/rainbowkit": "2.2.11",
     "@react-native-async-storage/async-storage": "~2.2.0",
     "@scaffold-ui/components": "^0.1.12",
-    "@scaffold-ui/debug-contracts": "^0.1.11",
+    "@scaffold-ui/debug-contracts": "patch:@scaffold-ui/debug-contracts@npm%3A0.1.11#~/.yarn/patches/@scaffold-ui-debug-contracts-npm-0.1.11-d32700232a.patch",
     "@scaffold-ui/hooks": "^0.1.8",
     "@tanstack/react-query": "~5.100.5",
     "blo": "~2.0.0",

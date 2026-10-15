@@ -6,4 +6,7 @@ export const campaignReadAbi = parseAbi([
   "function threshold() view returns (uint256)",
   "function balances(address) view returns (uint256)",
   "function openToWithdraw() view returns (bool)",
+  "function completed() view returns (bool)",
+  "function totalFunded() view returns (uint256)",
+  "function fundingRecipient() view returns (address)",
 ]);

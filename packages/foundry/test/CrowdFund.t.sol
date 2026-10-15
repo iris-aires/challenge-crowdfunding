@@ -191,9 +191,9 @@ contract CrowdFundTest is Test {
         assertGt(timeLeft1, 0, "timeLeft not greater than 0. Did you implement timeLeft() correctly?");
 
         vm.prank(user1);
-        crowdFund.contribute{ value: 1 ether }();
+        crowdFund.contribute{ value: 10 ether }();
 
-        vm.warp(block.timestamp + 72 hours);
+        vm.warp(block.timestamp + crowdFund.timeLeft() + 1);
 
         uint256 timeLeft2 = crowdFund.timeLeft();
         assertEq(timeLeft2, 0, "timeLeft not equal to 0. Did you implement timeLeft() correctly?");
@@ -212,7 +212,7 @@ contract CrowdFundTest is Test {
         vm.prank(user2);
         crowdFund.contribute{ value: 0.001 ether }();
 
-        vm.warp(block.timestamp + 72 hours);
+        vm.warp(block.timestamp + crowdFund.timeLeft() + 1);
 
         crowdFund.execute();
 

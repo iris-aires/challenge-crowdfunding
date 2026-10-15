@@ -18,7 +18,7 @@ contract FundingRecipientTest is Test {
     function setUp() public {
         recipient = new FundingRecipient();
         beneficiary = recipient.BENEFICIARY();
-        vm.deal(address(this), 10 ether);
+        vm.deal(address(this), 20 ether);
     }
 
     function testFuzz_UnauthorizedCannotWithdraw(address caller) public {
@@ -74,7 +74,7 @@ contract FundingRecipientTest is Test {
 
     function test_CrowdFundSuccessCanBeWithdrawnWithoutReopeningCampaign() public {
         CrowdFund crowdFund = new CrowdFund(address(recipient));
-        crowdFund.contribute{value: 1 ether}();
+        crowdFund.contribute{value: 10 ether}();
         vm.warp(crowdFund.deadline() + 1);
         crowdFund.execute();
         uint256 startingBalance = beneficiary.balance;
@@ -82,7 +82,7 @@ contract FundingRecipientTest is Test {
         vm.prank(beneficiary);
         recipient.withdraw();
 
-        assertEq(beneficiary.balance, startingBalance + 1 ether);
+        assertEq(beneficiary.balance, startingBalance + 10 ether);
         assertEq(address(recipient).balance, 0);
         vm.expectRevert(CrowdFund.AlreadyCompleted.selector);
         crowdFund.contribute{value: 0.1 ether}();

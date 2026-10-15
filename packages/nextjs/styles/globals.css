@@ -340,28 +340,35 @@ a:focus-visible {
   line-height: 1.7;
 }
 .contribution-card {
+  width: 100%;
+  max-width: 460px;
+  justify-self: end;
+  align-self: start;
   background: var(--color-base-100);
   border: 1px solid var(--color-base-300);
   border-radius: 16px;
-  padding: 24px;
+  padding: 20px;
+}
+.contribution-card p {
+  margin: 8px 0;
 }
 .contribution-amount {
-  font-size: 40px;
+  font-size: 32px;
   font-weight: 600;
   letter-spacing: -0.04em;
-  margin: 18px 0 24px;
+  margin: 12px 0;
 }
 .contribution-amount span {
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 400;
   color: color-mix(in srgb, var(--color-base-content) 45%, transparent);
 }
 .settlement-actions {
   display: flex;
-  gap: 12px;
+  gap: 10px;
   border-top: 1px solid var(--color-base-300);
-  padding-top: 16px;
-  margin-top: 18px;
+  padding-top: 12px;
+  margin-top: 12px;
 }
 .settlement-actions .btn {
   flex: 1;

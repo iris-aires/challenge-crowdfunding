@@ -1,0 +1,139 @@
+diff --git a/dist/esm/components/DisplayVariable.js b/dist/esm/components/DisplayVariable.js
+index b14928f2cf773dee59dfa62d00297749b4b7be0b..5d1a6ff118fb95efd37784100dcc16c87244313d 100644
+--- a/dist/esm/components/DisplayVariable.js
++++ b/dist/esm/components/DisplayVariable.js
+@@ -1,3 +1,4 @@
++import { formatDeadline } from "../utils/formatDeadline";
+ import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
+ import { useReadContract } from "wagmi";
+ import { useAnimationConfig } from "../hooks/useAnimationConfig";
+@@ -20,6 +21,7 @@ export const DisplayVariable = ({ contractAddress, abiFunction, refreshDisplayVa
+         },
+     });
+     const { showAnimation } = useAnimationConfig(result);
++    const deadlineDisplay = abiFunction.name === "deadline" ? formatDeadline(result) : undefined;
+     useEffect(() => {
+         refetch();
+     }, [refetch, refreshDisplayVariables]);
+@@ -30,5 +32,5 @@ export const DisplayVariable = ({ contractAddress, abiFunction, refreshDisplayVa
+             notification.error(parsedError);
+         }
+     }, [error]);
+-    return (_jsxs("div", { className: "space-y-1 pb-2", children: [_jsxs("div", { className: "flex items-center", children: [_jsx("h3", { className: "font-medium text-lg mb-0 break-all", children: abiFunction.name }), _jsx("button", { className: "p-1 text-sui-primary-content/60 hover:text-sui-primary-content dark:hover:bg-sui-primary-neutral hover:bg-sui-primary transition-colors duration-200 cursor-pointer ml-1", onClick: async () => await refetch(), children: isFetching ? (_jsx("div", { className: "w-3 h-3 border border-sui-primary-subtle border-t-transparent animate-spin" })) : (_jsx(ArrowPathIcon, { className: "h-3 w-3 cursor-pointer", "aria-hidden": "true" })) }), _jsx(InheritanceTooltip, { inheritedFrom: inheritedFrom })] }), _jsx("div", { className: "text-sui-primary-content/80 flex flex-col items-start", children: _jsx("div", { children: _jsx("div", { className: `block transition ${showAnimation ? "bg-[#e2d563] animate-pulse-fast" : "bg-transparent"}`, children: displayTxResult(result, "base") }) }) })] }));
++    return (_jsxs("div", { className: "space-y-1 pb-2", children: [_jsxs("div", { className: "flex items-center", children: [_jsx("h3", { className: "font-medium text-lg mb-0 break-all", children: abiFunction.name }), _jsx("button", { className: "p-1 text-sui-primary-content/60 hover:text-sui-primary-content dark:hover:bg-sui-primary-neutral hover:bg-sui-primary transition-colors duration-200 cursor-pointer ml-1", onClick: async () => await refetch(), children: isFetching ? (_jsx("div", { className: "w-3 h-3 border border-sui-primary-subtle border-t-transparent animate-spin" })) : (_jsx(ArrowPathIcon, { className: "h-3 w-3 cursor-pointer", "aria-hidden": "true" })) }), _jsx(InheritanceTooltip, { inheritedFrom: inheritedFrom })] }), _jsx("div", { className: "text-sui-primary-content/80 flex flex-col items-start", children: _jsx("div", { children: _jsx("div", { className: `block transition ${showAnimation ? "bg-[#e2d563] animate-pulse-fast" : "bg-transparent"}`, children: deadlineDisplay ? _jsx("time", { dateTime: deadlineDisplay.dateTime, title: deadlineDisplay.title, children: deadlineDisplay.text }) : displayTxResult(result, "base") }) }) })] }));
+ };
+diff --git a/dist/esm/utils/formatDeadline.js b/dist/esm/utils/formatDeadline.js
+new file mode 100644
+index 0000000000000000000000000000000000000000..a37870902124b91018c3324532c5c8d7908b142b
+--- /dev/null
++++ b/dist/esm/utils/formatDeadline.js
+@@ -0,0 +1,12 @@
++/** Format Unix seconds in the viewer's local timezone; keep unsafe values unformatted. */
++export const formatDeadline = timestamp => {
++    if (typeof timestamp !== "bigint" || timestamp < 0n || timestamp > 8640000000000n) return undefined;
++    const date = new Date(Number(timestamp) * 1000);
++    if (!Number.isFinite(date.getTime())) return undefined;
++    const year = date.getFullYear().toString().padStart(4, "0");
++    const month = (date.getMonth() + 1).toString().padStart(2, "0");
++    const day = date.getDate().toString().padStart(2, "0");
++    const zone = new Intl.DateTimeFormat().resolvedOptions().timeZone;
++    const fullTime = date.toLocaleString("en-GB", { timeZoneName: "longOffset", hour12: false }).replace("GMT", "UTC");
++    return { text: year + "-" + month + "-" + day, dateTime: date.toISOString(), title: fullTime + " (" + zone + ") · Unix timestamp: " + timestamp };
++};
+diff --git a/dist/esm/utils/getParsedError.js b/dist/esm/utils/getParsedError.js
+index 3100783b951d6afe3fb344acdced1cd8a0551fd2..22d1d9ba56864ef57ad600e33cb515276e2e749b 100644
+--- a/dist/esm/utils/getParsedError.js
++++ b/dist/esm/utils/getParsedError.js
+@@ -1,25 +1,73 @@
+-import { BaseError as BaseViemError, ContractFunctionRevertedError } from "viem";
+-/**
+- * Parses an viem/wagmi error to get a displayable string
+- * @param e - error object
+- * @returns parsed error string
+- */
++import { BaseError as BaseViemError, ContractFunctionRevertedError, decodeErrorResult, parseAbi } from "viem";
++// Keep custom error decoding available even when the deployed ABI is older.
++const errorMessages = {
++    NotAdmin: "Not Admin. Only the designated administrator can change the campaign deadline.",
++    InvalidDeadlineDays: "The number of days is too large. Enter a smaller whole number of days.",
++    AlreadyCompleted: "Campaign already completed. Contributions, settlement, and refunds are closed.",
++    AlreadySettled: "This campaign has already been settled for refunds. It cannot be settled again.",
++    ContributionClosed: "The contribution period has ended. New contributions are no longer accepted.",
++    NotOpenToWithdraw: "Refunds are not available. Settle the campaign after the deadline first.",
++    NoBalance: "You have no contribution balance available to withdraw.",
++    TooEarly: "The campaign deadline has not been reached. Settlement is not available yet.",
++    Unauthorized: "Only the designated beneficiary can withdraw funds from this recipient contract.",
++    WithdrawTransferFailed: "ETH transfer failed. The funds remain in the contract. Check that the receiving wallet accepts ETH.",
++    InvalidRecipient: "The funding recipient must be a deployed contract at a valid address.",
++    InvalidOraclePrice: "Chainlink returned an invalid or incomplete ETH/USD price. Please try again later.",
++    StaleOraclePrice: "The Chainlink ETH/USD price is more than two hours old. USD estimates are unavailable.",
++    UnsupportedOracleDecimals: "The price feed uses an unsupported decimal precision.",
++};
++const errorAbi = parseAbi([
++    "error NotAdmin()",
++    "error InvalidDeadlineDays(uint256 daysFromNow)",
++    "error AlreadyCompleted()",
++    "error AlreadySettled()",
++    "error ContributionClosed(uint256 deadline)",
++    "error NotOpenToWithdraw()",
++    "error NoBalance()",
++    "error TooEarly(uint256 deadline, uint256 currentTimestamp)",
++    "error Unauthorized(address caller)",
++    "error WithdrawTransferFailed(address to, uint256 amount)",
++    "error InvalidRecipient(address recipient)",
++    "error InvalidOraclePrice()",
++    "error StaleOraclePrice(uint256 updatedAt)",
++    "error UnsupportedOracleDecimals(uint8 decimals)",
++]);
++/** Prefer decoded revert data over generic RPC details, including nested causes. */
+ export const getParsedError = (error) => {
+-    const parsedError = error?.walk ? error.walk() : error;
+-    if (parsedError instanceof BaseViemError) {
+-        if (parsedError.details) {
+-            return parsedError.details;
++    const causes = [];
++    const seen = new Set();
++    for (let cause = error; cause && !seen.has(cause); cause = cause.cause) {
++        seen.add(cause);
++        causes.push(cause);
++    }
++    // viem can keep the decoded reason above the deepest RPC cause.
++    for (const cause of causes) {
++        let decoded = cause instanceof ContractFunctionRevertedError ? cause.data : undefined;
++        if (!decoded && typeof cause.data === "string" && /^0x[0-9a-f]+$/i.test(cause.data)) {
++            try {
++                decoded = decodeErrorResult({ abi: errorAbi, data: cause.data });
++            }
++            catch {
++                // Unknown selectors fall back to the provider's error message below.
++            }
+         }
+-        if (parsedError.shortMessage) {
+-            if (parsedError instanceof ContractFunctionRevertedError &&
+-                parsedError.data &&
+-                parsedError.data.errorName !== "Error") {
+-                const customErrorArgs = parsedError.data.args?.toString() ?? "";
+-                return `${parsedError.shortMessage.replace(/reverted\.$/, "reverted with the following reason:")}\n${parsedError.data.errorName}(${customErrorArgs})`;
++        if (decoded) {
++            const { errorName, args } = decoded;
++            if (errorName === "Error")
++                return `Transaction reverted: ${String(args?.[0] ?? "Unknown reason")}`;
++            if (errorName === "Panic") {
++                return `Contract execution failed an internal safety check (Panic: ${String(args?.[0])}).`;
+             }
+-            return parsedError.shortMessage;
++            const explanation = errorMessages[errorName];
++            return `${explanation ?? "The contract rejected this operation."} (${errorName}${args?.length ? `: ${args.map(String).join(", ")}` : ""})`;
+         }
+-        return parsedError.message ?? parsedError.name ?? "An unknown error occurred";
+     }
+-    return parsedError?.message ?? "An unknown error occurred";
++    if (causes.some(cause => cause.code === 4001 || cause.name === "UserRejectedRequestError")) {
++        return "Transaction cancelled. You rejected the request in your wallet.";
++    }
++    if (causes.some(cause => cause.name === "InsufficientFundsError")) {
++        return "Insufficient ETH to cover the transaction value and gas fee.";
++    }
++    const parsedError = error instanceof BaseViemError ? error : causes.at(-1);
++    return parsedError?.shortMessage ?? parsedError?.message ?? "An unknown error occurred. Please try again.";
+ };
